@@ -1,0 +1,19 @@
+{
+  "name": "wanba",
+  "version": "0.0.1",
+  "description": "快速预览，需要adb命令可用.",
+  "author": "zlin",
+  "main": "main.js",
+  "main-menu": {
+    "i18n:MAIN_MENU.package.title/wanba": {
+      "message": "wanba:open"
+    }
+  },
+  "panel": {
+    "main": "panel/index.js",
+    "type": "dockable",
+    "title": "wanba",
+    "width": 400,
+    "height": 300
+  }
+}
