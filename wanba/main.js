@@ -79,10 +79,20 @@ module.exports = {
     'open_current_folder'() {
       this.openCurrentFolder();
     },
+    'get_init_panel_date'() {
+      this.initPanel();
+    },
 
     'open'() {
       Editor.Panel.open('wanba');
     },
+  },
+
+  initPanel(){
+    // send ipc message to panel
+    Editor.Ipc.sendToPanel('wanba', 'wanba:init_game_version',{test:"0.0.1"});
+    Editor.Ipc.sendToPanel('wanba', 'wanba:init_xxteaKey',{test:"wanba_xiangbudao"});
+    Editor.Ipc.sendToPanel('wanba', 'wanba:init_creator_version',{test:3});
   },
 
   checkParam(args) {

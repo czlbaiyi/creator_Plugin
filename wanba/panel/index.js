@@ -17,6 +17,10 @@ Editor.Panel.extend({
     加密串:覆盖默认加密串:
     <ui-input id="xxteaKey">wanba_xiangbudao</ui-input>
     </form>
+    <form action="/demo/demo_form.asp">
+    发布版本(2|3),默认2
+    <ui-num-input id="build_version" step="1" min="2">2</ui-num-input>
+    </form>
     <ui-button id="build">生成游戏到build</ui-button>
     <ui-button id="build_android">生成游戏到android工程</ui-button>
     <ui-button id="repleace_android">快速替换android内游戏</ui-button>
@@ -28,6 +32,7 @@ Editor.Panel.extend({
   $: {
     version: '#version',
     xxteaKey: '#xxteaKey',
+    build_version: '#build_version',
     build_android: '#build_android',
     build: '#build',
     repleace_android: '#repleace_android',
@@ -58,6 +63,8 @@ Editor.Panel.extend({
     this.$open_current_folder.addEventListener('confirm', () => {
       Editor.Ipc.sendToMain('wanba:open_current_folder');
     });
+
+    Editor.Ipc.sendToMain('wanba:get_init_panel_date');
   },
 
   sendCommond(commond, version, xxteaKey) {
@@ -72,6 +79,18 @@ Editor.Panel.extend({
     }
     Editor.log("命令为:", commond, "Build的版本号为：", version, "加密串为：", xxteaKey);
     Editor.Ipc.sendToMain(commond, { version: version, xxteaKey: xxteaKey });
+  },
+
+  messages: {
+    'wanba:init_game_version' (event,args) {
+      this.$version.value = args.test;
+    },
+    'wanba:init_xxteaKey' (event,args) {
+      this.$xxteaKey.value = args.test;
+    },
+    'wanba:init_creator_version' (event,args) {
+      this.$build_version.value = args.test;
+    },
   }
 
 });
