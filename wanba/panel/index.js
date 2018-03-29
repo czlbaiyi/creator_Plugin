@@ -14,12 +14,24 @@ Editor.Panel.extend({
     <ui-input id="version">0.0.0</ui-input>
     </form> 
     <form action="/demo/demo_form.asp">
-    加密串:覆盖默认加密串:
+    加密串:
     <ui-input id="xxteaKey">wanba_xiangbudao</ui-input>
     </form>
     <form action="/demo/demo_form.asp">
-    发布版本(2|3),默认2
-    <ui-num-input id="build_version" step="1" min="2">2</ui-num-input>
+    发布版本(v2|v3)
+    <ui-num-input id="creator_version" step="1" min="2" max="3">2</ui-num-input>
+    </form>
+    <form action="/demo/demo_form.asp">
+    creator_v2_path:
+    <ui-input id="creator_v2_path"></ui-input>
+    </form>
+    <form action="/demo/demo_form.asp">
+    creator_v3_path:
+    <ui-input id="creator_v3_path"></ui-input>
+    </form>
+    <form action="/demo/demo_form.asp">
+    ndk_path:
+    <ui-input id="ndk_path"></ui-input>
     </form>
     <ui-button id="build">生成游戏到build</ui-button>
     <ui-button id="build_android">生成游戏到android工程</ui-button>
@@ -32,7 +44,10 @@ Editor.Panel.extend({
   $: {
     version: '#version',
     xxteaKey: '#xxteaKey',
-    build_version: '#build_version',
+    creator_version: '#creator_version',
+    creator_v2_path: '#creator_v2_path',
+    creator_v3_path: '#creator_v3_path',
+    ndk_path: '#ndk_path',
     build_android: '#build_android',
     build: '#build',
     repleace_android: '#repleace_android',
@@ -44,52 +59,71 @@ Editor.Panel.extend({
 
   // method executed when template and styles are successfully loaded and initialized
   ready() {
-    this.$build_android.addEventListener('confirm', () => {
-      this.sendCommond('wanba:build_android', this.$version.value, this.$xxteaKey.value);
+    this.$build.addEventListener('confirm', () => {
+      this.sendCommond('wanba:build');
     });
 
-    this.$build.addEventListener('confirm', () => {
-      this.sendCommond('wanba:build', this.$version.value, this.$xxteaKey.value);
+    this.$build_android.addEventListener('confirm', () => {
+      this.sendCommond('wanba:build_android');
     });
 
     this.$repleace_android.addEventListener('confirm', () => {
-      this.sendCommond('wanba:repleace_android', this.$version.value, this.$xxteaKey.value);
+      this.sendCommond('wanba:repleace_android');
     });
 
     this.$package_project.addEventListener('confirm', () => {
-      this.sendCommond('wanba:package_project', this.$version.value, this.$xxteaKey.value);
+      this.sendCommond('wanba:package_project');
     });
 
     this.$open_current_folder.addEventListener('confirm', () => {
       Editor.Ipc.sendToMain('wanba:open_current_folder');
     });
 
-    Editor.Ipc.sendToMain('wanba:get_init_panel_date');
+    Editor.Ipc.sendToMain('wanba:init_panel_data');
   },
 
-  sendCommond(commond, version, xxteaKey) {
-    if (version == "") {
-      Editor.log("version is null, please check");
+  getParam(){
+    let buildParam = {
+      version : this.$version.value,
+      xxteaKey : this.$xxteaKey.value,
+      creator_version : this.$creator_version.value,
+      creator_path :{
+        2:this.$creator_v2_path.value,
+        3:this.$creator_v3_path.value
+      },
+      ndk_path:this.$ndk_path.value,
+    }
+    return buildParam;
+  },
+
+  close(){
+    Editor.log("close_panel");
+    Editor.Ipc.sendToMain('wanba:close_panel',this.getParam());
+  },
+
+  sendCommond(commond) {
+    let buildParam = this.getParam();
+    if ( parseInt(buildParam.creator_version) < 2) {
+      Editor.log("creator_version is error, please check");
       return;
     }
 
-    if (xxteaKey == "") {
-      xxteaKey = "wanba_xiangbudao";
-      Editor.log('xxteaKey = "", will use  defauld wanba_xiangbudao');
-    }
-    Editor.log("命令为:", commond, "Build的版本号为：", version, "加密串为：", xxteaKey);
-    Editor.Ipc.sendToMain(commond, { version: version, xxteaKey: xxteaKey });
+    Editor.log("build 参数是:", JSON.stringify(buildParam));
+    Editor.Ipc.sendToMain(commond, buildParam);
   },
 
   messages: {
-    'wanba:init_game_version' (event,args) {
-      this.$version.value = args.test;
-    },
-    'wanba:init_xxteaKey' (event,args) {
-      this.$xxteaKey.value = args.test;
-    },
-    'wanba:init_creator_version' (event,args) {
-      this.$build_version.value = args.test;
+    'wanba:init_panel_config'(event, args) {
+      this.$version.value = args.version;
+      this.$xxteaKey.value = args.xxteaKey;
+      this.$creator_version.value = args.creator_version;
+      this.$ndk_path.value = args.ndk_path;
+      if (args.creator_path[2]) {
+        this.$creator_v2_path.value = args.creator_path[2];
+      }
+      if (args.creator_path[3]) {
+        this.$creator_v3_path.value = args.creator_path[3];
+      }
     },
   }
 

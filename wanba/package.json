@@ -13,7 +13,7 @@
     "main": "panel/index.js",
     "type": "dockable",
     "title": "wanba",
-    "width": 400,
-    "height": 300
+    "width": 500,
+    "height": 400
   }
 }

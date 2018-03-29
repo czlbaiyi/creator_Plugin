@@ -2,14 +2,19 @@
 
 //var fs = require('fs');
 
-var wanba_game_vsersion = "";
 var wanba_game_out_path = "";
 var wanba_game_name = "";
-var ndkPath = "";
 var targetPlatform = "";
-var xxteaKey = "";
 var isDebug = true;
 var suportEncryptJs = true;
+var wanba_config_file = '';
+var wanba_config = {
+  version: "0.0.1",
+  xxteaKey: "wanba_xiangbudao",
+  creator_version: 2,
+  creator_path: {},
+  ndk_path: ""
+};
 
 module.exports = {
 
@@ -21,18 +26,8 @@ module.exports = {
     wanba_game_out_path = path.normalize(wanba_game_out_path);
     Editor.log("wanba_game_out_path = ", wanba_game_out_path);
 
-    var fs = require('fs');
-    // ndkPath = fs.readFileSync(Editor.url('packages://wanba/ndkpath.txt', 'utf8'), 'utf-8');
-    ndkPath = Editor.App.home.replace(/.CocosCreator/, "Library/Android/sdk/platform-tools/adb");
-    Editor.log('ndkPath:', ndkPath);    //同步读取结束
-
-    // Editor.log("Editor:\r\n",Editor);
-
-    let versionArr = Editor.App.version.split('.');
-    if(parseInt(versionArr[0]) <= 1 && parseInt(versionArr[1]) <= 5){
-      suportEncryptJs = false;
-      Editor.log(Editor.App.version + " not suport use custom encryptJs param");
-    }
+    wanba_config_file = Editor.url('packages://wanba/config.json', 'utf8');
+    this.initConfig();
 
     Editor.log('load wanba package success');
   },
@@ -47,7 +42,7 @@ module.exports = {
 
     'build'(event, args) {
       // open entry panel registered in package.json
-      if (this.checkParam(args)) {
+      if (this.checkBuildParam(args)) {
         targetPlatform = "ios";
         this.build();
       };
@@ -55,7 +50,7 @@ module.exports = {
 
     'build_android'(event, args) {
       // open entry panel registered in package.json
-      if (this.checkParam(args)) {
+      if (this.checkBuildParam(args)) {
         targetPlatform = "android";
         this.buildAndroid();
       };
@@ -63,42 +58,126 @@ module.exports = {
 
     'repleace_android'(event, args) {
       // open entry panel registered in package.json
-      if (this.checkParam(args)) {
+      if (this.checkBuildParam(args)) {
         targetPlatform = "android";
         this.repleaceAndroid();
       };
     },
 
     'package_project'(event, args) {
-      if (this.checkParam(args)) {
+      if (this.checkBuildParam(args)) {
         targetPlatform = "ios";
         this.packageProject();
       };
     },
-    
+
     'open_current_folder'() {
       this.openCurrentFolder();
     },
-    'get_init_panel_date'() {
+
+    'init_panel_data'() {
       this.initPanel();
+    },
+
+    'close_panel'(event, args) {
+      wanba_config = args;
+      this.saveConfig();
     },
 
     'open'() {
       Editor.Panel.open('wanba');
     },
+
+    'editor:panel-open'() {
+      Editor.log("editor:panel-open");
+    },
+
+    'editor:panel-close'() {
+      Editor.log("editor:panel-close");
+    },
+
+    'wanba:panel-open'() {
+      Editor.log("wanba:panel-open");
+    },
+
+    'wanba:panel-close'() {
+      Editor.log("wanba:panel-close");
+    },
+
+    'editor:panel-popup'() {
+      Editor.log("editor:panel-popup");
+    },
+    'wanba:panel-popup'() {
+      Editor.log("wanba:panel-popup");
+    },
+
+    'editor:panel-run'() {
+      Editor.log("editor:panel-run");
+    },
+    'wanba:panel-run'() {
+      Editor.log("wanba:panel-run");
+    },
+    'editor:panel-unload'() {
+      Editor.log("editor:panel-unload");
+    },
+    'wanba:panel-unload'() {
+      Editor.log("wanba:panel-unload");
+    },
   },
 
-  initPanel(){
+  initConfig() {
+    let fs = require('fs');
+    if (fs.existsSync(wanba_config_file)) {
+      let tempData = fs.readFileSync(wanba_config_file, 'utf-8');
+      wanba_config = JSON.parse(tempData);
+    }
+    Editor.log("current config is : \r\n", JSON.stringify(wanba_config));
+  },
+
+  saveConfig() {
+    let fs = require('fs');
+    fs.writeFileSync(wanba_config_file, JSON.stringify(wanba_config));
+    Editor.log("配置保存成功，路径为:", wanba_config_file);
+  },
+
+  setCreatorPath(args) {
+    let fs = require('fs');
+    if (!args.creator_path || args.creator_path.indexOf("app") < 0 || !fs.existsSync(args.creator_path)) {
+      Editor.log("creator路径不合法，请检查,", args.creator_path);
+      return;
+    }
+    wanba_config.creator_path[args.creator_version] = args.creator_path;
+    this.saveConfig();
+  },
+
+  setNdkPath(args) {
+    let fs = require('fs');
+    // if(!fs.existsSync(args.creator_path)){
+    //   Editor.log("ndk路径设置错误：",args.ndk_path);
+    //   return ;
+    // }
+
+    if (!args.ndk_path || args.ndk_path == "") {
+      Editor.log("ndk路径设置错误：", args.ndk_path);
+      return;
+    }
+    wanba_config.ndk_path = args.ndk_path;
+    this.saveConfig();
+  },
+
+  initPanel() {
     // send ipc message to panel
-    Editor.Ipc.sendToPanel('wanba', 'wanba:init_game_version',{test:"0.0.1"});
-    Editor.Ipc.sendToPanel('wanba', 'wanba:init_xxteaKey',{test:"wanba_xiangbudao"});
-    Editor.Ipc.sendToPanel('wanba', 'wanba:init_creator_version',{test:3});
+    Editor.Ipc.sendToPanel('wanba', 'wanba:init_panel_config', wanba_config);
   },
 
-  checkParam(args) {
-    wanba_game_vsersion = args.version;
-    xxteaKey = args.xxteaKey;
-    Editor.log("打包的版本号为：", wanba_game_vsersion, "加密串为：", xxteaKey);
+  checkBuildParam(args) {
+    wanba_config = args;
+    suportEncryptJs = wanba_config.creator_version == 2 ? false : true;
+    if (!wanba_config.creator_path[wanba_config.creator_version]) {
+      Editor.error("还没设置对应版本的Creator的路径,请检查,version:", wanba_config.creator_version);
+      return;
+    }
+    Editor.log("build 参数是:", JSON.stringify(wanba_config));
     this.createVersionFile();
     return true;
   },
@@ -122,7 +201,7 @@ module.exports = {
     //生成version
     let versionPath = wanba_game_out_path + "/version.json";
     let versionStr = '{\r\n    "version": "{version}",\r\n    "gameName": "{gameName}"\r\n}';
-    versionStr = versionStr.replace(/{version}/g, wanba_game_vsersion);
+    versionStr = versionStr.replace(/{version}/g, wanba_config.version);
     versionStr = versionStr.replace(/{gameName}/g, wanba_game_name);
 
     //创建vserion
@@ -147,9 +226,8 @@ module.exports = {
   },
 
   async buildProject() {
-    let commonStr = Editor.App.path;
-    commonStr = commonStr.replace(/Resources/, "MacOS");
-    commonStr = commonStr.replace(/app.asar/, "CocosCreator");
+    let commonStr = wanba_config.creator_path[wanba_config.creator_version];
+    commonStr += "/Contents/MacOS/CocosCreator";
     commonStr += ' --path {projectPath} --build "{buildParamStr}"';
     commonStr = commonStr.replace(/{projectPath}/g, Editor.projectPath);
 
@@ -158,12 +236,12 @@ module.exports = {
     buildParamStr = buildParamStr.replace(/{platform}/g, targetPlatform);
 
     //自定义加密脚本
-    if(suportEncryptJs && !isDebug){
+    if (suportEncryptJs && !isDebug) {
       let xxteaKeyStr = ';encryptJs=true;xxteaKey={xxteaKey};zipCompressJs=true';
-      xxteaKeyStr = xxteaKeyStr.replace(/{xxteaKey}/g, xxteaKey);
+      xxteaKeyStr = xxteaKeyStr.replace(/{xxteaKey}/g, wanba_config.xxteaKey);
       buildParamStr += xxteaKeyStr;
     }
-    
+
     if (isDebug) {
       buildParamStr = buildParamStr.replace(/{isDebug}/g, "true");
     }
@@ -189,10 +267,11 @@ module.exports = {
     let commonStr = 'rm -r -f {wanba_game_out_path}/res'
     commonStr += ' && rm -r -f {wanba_game_out_path}/src'
     commonStr += ' && cp -r -f {tempFrom}/res {wanba_game_out_path}/res';
-    commonStr += ' && cp -r -f {tempFrom}/src {wanba_game_out_path}/src';
+    commonStr += ' && cp -r -f {tempFrom}/src/project.* {wanba_game_out_path}/src';
+    commonStr += ' && cp -r -f {tempFrom}/src/settings.* {wanba_game_out_path}/src';
     commonStr = commonStr.replace(/{tempFrom}/g, tempFrom);
     commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
-    
+
     try {
       Editor.log('moveToBuild! begin ');
       await Promise.resolve(this.excCommondAsync(commonStr));
@@ -221,13 +300,12 @@ module.exports = {
   },
 
   async moveToAndroidMobilePhone() {
-    // let ndkPath = Editor.App.home.replace(/.CocosCreator/, "Library/Android/sdk/platform-tools/adb");
     let targetPath = "/storage/emulated/0/Android/data/com.wodi.who/files/cocos/";
     //let targetPath = "/storage/emulated/legacy/Android/data/com.wodi.who/files/cocos";
-    let commonStr = ndkPath + " shell rm -rf " + targetPath + wanba_game_name;
-    commonStr += " && " + ndkPath + " push " + wanba_game_out_path + " " + targetPath;
+    let commonStr = wanba_config.ndk_path + " shell rm -rf " + targetPath + wanba_game_name;
+    commonStr += " && " + wanba_config.ndk_path + " push " + wanba_game_out_path + " " + targetPath;
     //删除多余的wanba_nurture_0.0.2.zip类似的文件
-    commonStr += " && " + ndkPath + " shell rm -rf " + targetPath + wanba_game_name + "/wanba*.zip";
+    commonStr += " && " + wanba_config.ndk_path + " shell rm -rf " + targetPath + wanba_game_name + "/wanba*.zip";
     Editor.log("开始替换游戏 到 android 手机", commonStr);
 
     try {
@@ -243,8 +321,8 @@ module.exports = {
     let commonStr = 'cd {wanba_game_out_path} && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
     commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
     commonStr = commonStr.replace(/{gameName}/g, wanba_game_name);
-    commonStr = commonStr.replace(/{version}/g, wanba_game_vsersion);
-    
+    commonStr = commonStr.replace(/{version}/g, wanba_config.version);
+
     try {
       Editor.log('zipProject! begin ');
       await Promise.resolve(this.excCommondAsync(commonStr));
@@ -267,7 +345,7 @@ module.exports = {
       Editor.log('build! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_game_vsersion);
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_config.version);
   },
 
   async buildAndroid() {
@@ -283,11 +361,15 @@ module.exports = {
       Editor.log('buildAndroid! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_game_vsersion);
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_config.version);
   },
 
   async repleaceAndroid() {
     Editor.log('repleaceAndroid!', wanba_game_name);
+    if (!wanba_config.ndk_path) {
+      Editor.log("请先设置ndk路径");
+    }
+
     try {
       Editor.log('repleaceAndroid! begin ');
       isDebug = true;
@@ -298,7 +380,7 @@ module.exports = {
     } catch (error) {
       Editor.log('repleaceAndroid! err');
     }
-    Editor.log("替换完成 name:", wanba_game_name, " vserion:", wanba_game_vsersion);
+    Editor.log("替换完成 name:", wanba_game_name, " vserion:", wanba_config.version);
   },
 
   async packageProject() {
@@ -313,10 +395,10 @@ module.exports = {
     } catch (error) {
       Editor.log('packageProject! err');
     }
-    Editor.log("打包成功 name:", wanba_game_name, " vserion:", wanba_game_vsersion);
+    Editor.log("打包成功 name:", wanba_game_name, " vserion:", wanba_config.version);
   },
 
-  async openCurrentFolder(){
+  async openCurrentFolder() {
     Editor.log('open folder', Editor.projectPath);
     let commonStr = "open " + Editor.projectPath;
     try {
