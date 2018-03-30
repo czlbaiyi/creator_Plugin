@@ -3,6 +3,7 @@
 //var fs = require('fs');
 
 var wanba_game_out_path = "";
+var wanba_game_publish_path
 var wanba_game_name = "";
 var targetPlatform = "";
 var isDebug = true;
@@ -22,9 +23,10 @@ module.exports = {
     // execute when package loaded
     wanba_game_name = Editor.projectInfo.name;
     wanba_game_out_path = Editor.projectPath + "/../../build/" + wanba_game_name;
+    wanba_game_publish_path = Editor.projectPath + "/../../publish/";
     var path = require('path');
     wanba_game_out_path = path.normalize(wanba_game_out_path);
-    Editor.log("wanba_game_out_path = ", wanba_game_out_path);
+    wanba_game_publish_path = path.normalize(wanba_game_publish_path);
 
     wanba_config_file = Editor.url('packages://wanba/config.json', 'utf8');
     this.initConfig();
@@ -267,8 +269,9 @@ module.exports = {
     let commonStr = 'rm -r -f {wanba_game_out_path}/res'
     commonStr += ' && rm -r -f {wanba_game_out_path}/src'
     commonStr += ' && cp -r -f {tempFrom}/res {wanba_game_out_path}/res';
-    commonStr += ' && cp -r -f {tempFrom}/src/project.* {wanba_game_out_path}/src';
-    commonStr += ' && cp -r -f {tempFrom}/src/settings.* {wanba_game_out_path}/src';
+    commonStr += ' && mkdir {wanba_game_out_path}/src/';
+    commonStr += ' && cp -r -f {tempFrom}/src/project.* {wanba_game_out_path}/src/';
+    commonStr += ' && cp -r -f {tempFrom}/src/settings.* {wanba_game_out_path}/src/';
     commonStr = commonStr.replace(/{tempFrom}/g, tempFrom);
     commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
 
@@ -318,8 +321,8 @@ module.exports = {
   },
 
   async zipProject() {
-    let commonStr = 'cd {wanba_game_out_path} && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
-    commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
+    let commonStr = 'cd {wanba_game_publish_path} && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
+    commonStr = commonStr.replace(/{wanba_game_publish_path}/g, wanba_game_publish_path);
     commonStr = commonStr.replace(/{gameName}/g, wanba_game_name);
     commonStr = commonStr.replace(/{version}/g, wanba_config.version);
 
