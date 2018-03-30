@@ -321,6 +321,12 @@ module.exports = {
   },
 
   async zipProject() {
+    var fs = require('fs');
+    if (!fs.existsSync(wanba_game_publish_path)) {
+      let res = fs.mkdirSync(wanba_game_publish_path);
+      Editor.log("create dir ", wanba_game_publish_path);
+    }
+
     let commonStr = 'cd {wanba_game_publish_path} && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
     commonStr = commonStr.replace(/{wanba_game_publish_path}/g, wanba_game_publish_path);
     commonStr = commonStr.replace(/{gameName}/g, wanba_game_name);
