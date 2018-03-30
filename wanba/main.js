@@ -327,7 +327,10 @@ module.exports = {
       Editor.log("create dir ", wanba_game_publish_path);
     }
 
-    let commonStr = 'cd {wanba_game_publish_path} && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
+    let commonStr = 'cd {wanba_game_out_path}'
+    commonStr += ' && zip -P wanba_xiangbudao wanba_{gameName}_{version}.zip -r src/* res/* version.json'
+    commonStr += ' && mv wanba_{gameName}_{version}.zip {wanba_game_publish_path}'
+    commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
     commonStr = commonStr.replace(/{wanba_game_publish_path}/g, wanba_game_publish_path);
     commonStr = commonStr.replace(/{gameName}/g, wanba_game_name);
     commonStr = commonStr.replace(/{version}/g, wanba_config.version);
