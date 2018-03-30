@@ -270,8 +270,14 @@ module.exports = {
     commonStr += ' && rm -r -f {wanba_game_out_path}/src'
     commonStr += ' && cp -r -f {tempFrom}/res {wanba_game_out_path}/res';
     commonStr += ' && mkdir {wanba_game_out_path}/src/';
-    commonStr += ' && cp -r -f {tempFrom}/src/project.* {wanba_game_out_path}/src/';
-    commonStr += ' && cp -r -f {tempFrom}/src/settings.* {wanba_game_out_path}/src/';
+    if(isDebug){
+      commonStr += ' && cp -r -f {tempFrom}/src/project.dev.js {wanba_game_out_path}/src/project.js';
+      commonStr += ' && cp -r -f {tempFrom}/src/settings.js {wanba_game_out_path}/src/settings.js';
+    }
+    else{
+      commonStr += ' && cp -r -f {tempFrom}/src/project.jsc {wanba_game_out_path}/src/projects.jsc';
+      commonStr += ' && cp -r -f {tempFrom}/src/settings.jsc {wanba_game_out_path}/src/settings.jsc';
+    }
     commonStr = commonStr.replace(/{tempFrom}/g, tempFrom);
     commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
 
