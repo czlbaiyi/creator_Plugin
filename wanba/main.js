@@ -275,7 +275,7 @@ module.exports = {
       commonStr += ' && cp -r -f {tempFrom}/src/settings.js {wanba_game_out_path}/src/settings.js';
     }
     else{
-      commonStr += ' && cp -r -f {tempFrom}/src/project.jsc {wanba_game_out_path}/src/projects.jsc';
+      commonStr += ' && cp -r -f {tempFrom}/src/project.jsc {wanba_game_out_path}/src/project.jsc';
       commonStr += ' && cp -r -f {tempFrom}/src/settings.jsc {wanba_game_out_path}/src/settings.jsc';
     }
     commonStr = commonStr.replace(/{tempFrom}/g, tempFrom);
