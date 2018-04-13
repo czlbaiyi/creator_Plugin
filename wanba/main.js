@@ -53,7 +53,8 @@ module.exports = {
     'build_android'(event, args) {
       // open entry panel registered in package.json
       if (this.checkBuildParam(args)) {
-        targetPlatform = "android";
+        // targetPlatform = "android";
+        targetPlatform = "ios";
         this.buildAndroid();
       };
     },
@@ -88,42 +89,6 @@ module.exports = {
 
     'open'() {
       Editor.Panel.open('wanba');
-    },
-
-    'editor:panel-open'() {
-      Editor.log("editor:panel-open");
-    },
-
-    'editor:panel-close'() {
-      Editor.log("editor:panel-close");
-    },
-
-    'wanba:panel-open'() {
-      Editor.log("wanba:panel-open");
-    },
-
-    'wanba:panel-close'() {
-      Editor.log("wanba:panel-close");
-    },
-
-    'editor:panel-popup'() {
-      Editor.log("editor:panel-popup");
-    },
-    'wanba:panel-popup'() {
-      Editor.log("wanba:panel-popup");
-    },
-
-    'editor:panel-run'() {
-      Editor.log("editor:panel-run");
-    },
-    'wanba:panel-run'() {
-      Editor.log("wanba:panel-run");
-    },
-    'editor:panel-unload'() {
-      Editor.log("editor:panel-unload");
-    },
-    'wanba:panel-unload'() {
-      Editor.log("wanba:panel-unload");
     },
   },
 
