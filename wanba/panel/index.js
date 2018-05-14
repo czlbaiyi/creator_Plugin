@@ -12,6 +12,7 @@ Editor.Panel.extend({
     <form action="/demo/demo_form.asp">
     版本号:
     <ui-input id="version">0.0.0</ui-input>
+    不需要耀前缀版本号，错误:2.000.01， 正确:000.01
     </form> 
     <form action="/demo/demo_form.asp">
     加密串:
@@ -37,6 +38,7 @@ Editor.Panel.extend({
     <ui-button id="build_android">生成游戏到android工程</ui-button>
     <ui-button id="repleace_android">快速替换android内游戏</ui-button>
     <ui-button id="package_project">快速生成发布包</ui-button>
+    <ui-button id="update_skin">更新皮肤</ui-button>
     <ui-button id="open_current_folder">打开本工程文件夹</ui-button>
   `,
 
@@ -52,7 +54,8 @@ Editor.Panel.extend({
     build: '#build',
     repleace_android: '#repleace_android',
     package_project: '#package_project',
-    open_current_folder: '#open_current_folder'
+    open_current_folder: '#open_current_folder',
+    update_skin: '#update_skin'
   },
 
 
@@ -79,31 +82,35 @@ Editor.Panel.extend({
       Editor.Ipc.sendToMain('wanba:open_current_folder');
     });
 
+    this.$update_skin.addEventListener('confirm',()=>{
+      Editor.Ipc.sendToMain('wanba:update_skin');
+    });
+
     Editor.Ipc.sendToMain('wanba:init_panel_data');
   },
 
-  getParam(){
+  getParam() {
     let buildParam = {
-      version : this.$version.value,
-      xxteaKey : this.$xxteaKey.value,
-      creator_version : this.$creator_version.value,
-      creator_path :{
-        2:this.$creator_v2_path.value,
-        3:this.$creator_v3_path.value
+      version: this.$version.value,
+      xxteaKey: this.$xxteaKey.value,
+      creator_version: this.$creator_version.value,
+      creator_path: {
+        2: this.$creator_v2_path.value,
+        3: this.$creator_v3_path.value
       },
-      ndk_path:this.$ndk_path.value,
+      ndk_path: this.$ndk_path.value,
     }
     return buildParam;
   },
 
-  close(){
+  close() {
     Editor.log("close_panel");
-    Editor.Ipc.sendToMain('wanba:close_panel',this.getParam());
+    Editor.Ipc.sendToMain('wanba:close_panel', this.getParam());
   },
 
   sendCommond(commond) {
     let buildParam = this.getParam();
-    if ( parseInt(buildParam.creator_version) < 2) {
+    if (parseInt(buildParam.creator_version) < 2) {
       Editor.log("creator_version is error, please check");
       return;
     }

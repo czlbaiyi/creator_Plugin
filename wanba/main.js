@@ -10,7 +10,7 @@ var isDebug = true;
 var suportEncryptJs = true;
 var wanba_config_file = '';
 var wanba_config = {
-  version: "0.0.1",
+  version: "0.1",
   xxteaKey: "wanba_xiangbudao",
   creator_version: 2,
   creator_path: {},
@@ -41,6 +41,18 @@ module.exports = {
 
   // register your ipc messages here
   messages: {
+    'open'() {
+      Editor.Panel.open('wanba');
+    },
+
+    'close_panel'(event, args) {
+      wanba_config = args;
+      this.saveConfig();
+    },
+
+    'init_panel_data'() {
+      this.initPanel();
+    },
 
     'build'(event, args) {
       // open entry panel registered in package.json
@@ -78,17 +90,8 @@ module.exports = {
       this.openCurrentFolder();
     },
 
-    'init_panel_data'() {
-      this.initPanel();
-    },
-
-    'close_panel'(event, args) {
-      wanba_config = args;
-      this.saveConfig();
-    },
-
-    'open'() {
-      Editor.Panel.open('wanba');
+    'wanba:update_skin'() {
+      this.updateSkin();
     },
   },
 
@@ -132,6 +135,10 @@ module.exports = {
     this.saveConfig();
   },
 
+  getVersion() {
+    return wanba_config.creator_version + "." + wanba_config.version;
+  },
+
   initPanel() {
     // send ipc message to panel
     Editor.Ipc.sendToPanel('wanba', 'wanba:init_panel_config', wanba_config);
@@ -168,7 +175,7 @@ module.exports = {
     //生成version
     let versionPath = wanba_game_out_path + "/version.json";
     let versionStr = '{\r\n    "version": "{version}",\r\n    "gameName": "{gameName}"\r\n}';
-    versionStr = versionStr.replace(/{version}/g, wanba_config.version);
+    versionStr = versionStr.replace(/{version}/g, this.getVersion());
     versionStr = versionStr.replace(/{gameName}/g, wanba_game_name);
 
     //创建vserion
@@ -235,11 +242,11 @@ module.exports = {
     commonStr += ' && rm -r -f {wanba_game_out_path}/src'
     commonStr += ' && cp -r -f {tempFrom}/res {wanba_game_out_path}/res';
     commonStr += ' && mkdir {wanba_game_out_path}/src/';
-    if(isDebug){
+    if (isDebug) {
       commonStr += ' && cp -r -f {tempFrom}/src/project.dev.js {wanba_game_out_path}/src/project.js';
       commonStr += ' && cp -r -f {tempFrom}/src/settings.js {wanba_game_out_path}/src/settings.js';
     }
-    else{
+    else {
       commonStr += ' && cp -r -f {tempFrom}/src/project.jsc {wanba_game_out_path}/src/project.jsc';
       commonStr += ' && cp -r -f {tempFrom}/src/settings.jsc {wanba_game_out_path}/src/settings.jsc';
     }
@@ -304,7 +311,7 @@ module.exports = {
     commonStr = commonStr.replace(/{wanba_game_out_path}/g, wanba_game_out_path);
     commonStr = commonStr.replace(/{wanba_game_publish_path}/g, wanba_game_publish_path);
     commonStr = commonStr.replace(/{gameName}/g, wanba_game_name);
-    commonStr = commonStr.replace(/{version}/g, wanba_config.version);
+    commonStr = commonStr.replace(/{version}/g, this.getVersion());
 
     try {
       Editor.log('zipProject! begin ');
@@ -328,7 +335,7 @@ module.exports = {
       Editor.log('build! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_config.version);
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion());
   },
 
   async buildAndroid() {
@@ -344,7 +351,7 @@ module.exports = {
       Editor.log('buildAndroid! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", wanba_config.version);
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion());
   },
 
   async repleaceAndroid() {
@@ -363,7 +370,7 @@ module.exports = {
     } catch (error) {
       Editor.log('repleaceAndroid! err');
     }
-    Editor.log("替换完成 name:", wanba_game_name, " vserion:", wanba_config.version);
+    Editor.log("替换完成 name:", wanba_game_name, " vserion:", this.getVersion());
   },
 
   async packageProject() {
@@ -378,7 +385,7 @@ module.exports = {
     } catch (error) {
       Editor.log('packageProject! err');
     }
-    Editor.log("打包成功 name:", wanba_game_name, " vserion:", wanba_config.version);
+    Editor.log("打包成功 name:", wanba_game_name, " vserion:", this.getVersion());
   },
 
   async openCurrentFolder() {
@@ -393,4 +400,33 @@ module.exports = {
     }
     Editor.log("打开游戏文件夹完成 name:", wanba_game_name);
   },
+
+  async updateSkin() {
+    Editor.log('update skin', Editor.projectPath);
+    let toolsPath = Editor.projectPath + "/../../tools/cat_res_pub.py";
+    let petDbOriginPath = Editor.projectPath + "/../arts/cat_origin/";
+    let skinOriginPath = Editor.projectPath + "/../arts/output/";
+    let petDbTargetPath = Editor.projectPath + "/assets/res/cat/";
+    let skinTargetPath = Editor.projectPath + "/assets/resources/skin/";
+    var path = require('path');
+    toolsPath = path.normalize(toolsPath);
+    petDbOriginPath = path.normalize(petDbOriginPath);
+    skinOriginPath = path.normalize(skinOriginPath);
+    petDbTargetPath = path.normalize(petDbTargetPath);
+    skinTargetPath = path.normalize(skinTargetPath);
+
+
+    let commonStr = "python " + toolsPath;  //生成新的皮肤
+    commonStr += " && rm -vrf " + skinTargetPath + "*.png"; //删除老皮肤
+    commonStr += " && cp -v " + petDbOriginPath + "*.* " + petDbTargetPath; //复制龙骨数据
+    commonStr += " && cp -v " + skinOriginPath + "*.png " + skinTargetPath;//复制皮肤数据
+    try {
+      Editor.log('update skin! begin ');
+      await Promise.resolve(this.excCommondAsync(commonStr));
+      Editor.log('update skin! end');
+    } catch (error) {
+      Editor.log('update skin! err');
+    }
+    Editor.log("皮肤更新完成 name:", wanba_game_name);
+  }
 };
