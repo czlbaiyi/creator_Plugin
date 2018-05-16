@@ -335,7 +335,7 @@ module.exports = {
       Editor.log('build! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion());
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion(), " time =", new Date().toLocaleString());
   },
 
   async buildAndroid() {
@@ -351,7 +351,7 @@ module.exports = {
       Editor.log('buildAndroid! err');
     }
 
-    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion());
+    Editor.log("构建完成 name:", wanba_game_name, " vserion:", this.getVersion(), " time =", new Date().toLocaleString());
   },
 
   async repleaceAndroid() {
@@ -370,7 +370,7 @@ module.exports = {
     } catch (error) {
       Editor.log('repleaceAndroid! err');
     }
-    Editor.log("替换完成 name:", wanba_game_name, " vserion:", this.getVersion());
+    Editor.log("替换完成 name:", wanba_game_name, " vserion:", this.getVersion(), " time =", new Date().toLocaleString());
   },
 
   async packageProject() {
@@ -385,7 +385,7 @@ module.exports = {
     } catch (error) {
       Editor.log('packageProject! err');
     }
-    Editor.log("打包成功 name:", wanba_game_name, " vserion:", this.getVersion());
+    Editor.log("打包成功 name:", wanba_game_name, " vserion:", this.getVersion(), " time =", new Date().toLocaleString());
   },
 
   async openCurrentFolder() {
@@ -398,7 +398,7 @@ module.exports = {
     } catch (error) {
       Editor.log('openCurrentFolder! err');
     }
-    Editor.log("打开游戏文件夹完成 name:", wanba_game_name);
+    Editor.log("打开游戏文件夹完成 name:", wanba_game_name, " time =", new Date().toLocaleString());
   },
 
   async updateSkin() {
@@ -427,6 +427,6 @@ module.exports = {
     } catch (error) {
       Editor.log('update skin! err');
     }
-    Editor.log("皮肤更新完成 name:", wanba_game_name);
+    Editor.log("皮肤更新完成 name:", wanba_game_name, " time =", new Date().toLocaleString());
   }
 };
